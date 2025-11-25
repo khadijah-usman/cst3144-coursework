@@ -407,10 +407,11 @@ export default {
     },
   },
   methods: {
+   // Switch back to the lessons view
     goHome() {
       this.showCart = false;
     },
-
+    // Add a lesson to the cart and decrease available spaces
     addToCart(lesson) {
       if (lesson.spaces <= 0) return;
 
@@ -430,7 +431,7 @@ export default {
       lesson.spaces -= 1;
       this.showCart = true;
     },
-
+    // Increase quantity for a cart item (if spaces available)
     increaseQuantity(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -439,7 +440,7 @@ export default {
         lesson.spaces -= 1;
       }
     },
-
+    // Decrease quantity or remove item when it reaches zero
     decreaseQuantity(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -451,7 +452,7 @@ export default {
         this.removeFromCart(index);
       }
     },
-
+    // Remove an item from the cart and restore its spaces
     removeFromCart(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -460,15 +461,15 @@ export default {
       }
       this.cart.splice(index, 1);
     },
-
+    // Validate that the name contains only letters and spaces
     validateName(value) {
       return /^[A-Za-z\s]+$/.test(value);
     },
-
+    // Validate that the phone number contains only digits
     validatePhone(value) {
       return /^[0-9]+$/.test(value);
     },
-
+    // Handle checkout: validate form, then clear cart and show success message
     checkout() {
       this.nameError = "";
       this.phoneError = "";
