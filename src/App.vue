@@ -255,6 +255,8 @@ export default {
       searchTerm: "",
       sortBy: "subject",
       sortOrder: "asc",
+
+      // Main list of 10 lessons used in the application
       lessons: [
         {
           id: 1,
