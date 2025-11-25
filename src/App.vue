@@ -1,21 +1,28 @@
 <template>
   <div id="app">
-    <!-- HEADER -->
+    <!-- ========================= HEADER ========================= -->
     <header class="header">
+      <!-- Logo also acts as a "home" button to return to lesson list -->
       <h1 class="logo" @click="goHome" style="cursor: pointer;">
         <i class="fa-solid fa-graduation-cap"></i> LessonHub
       </h1>
 
       <div class="controls">
-        <!-- SEARCH -->
+        <!--
+          SEARCH
+          v-model: two-way binds searchTerm so the computed property
+          sortedAndFilteredLessons can reactively filter the list.
+        -->
         <input
           v-model="searchTerm"
           class="search"
           placeholder="Search by subject, location, price, or spaces..."
+          aria-label="Search lessons"
         />
 
-        <!-- SORTING -->
+        <!-- SORTING CONTROLS -->
         <div class="sort-group">
+          <!-- Sort by field: subject, location, price or spaces -->
           <div class="custom-select">
             <select v-model="sortBy">
               <option value="subject">Subject</option>
@@ -26,6 +33,7 @@
             <i class="fa-solid fa-angle-down"></i>
           </div>
 
+          <!-- Sort order: ascending or descending -->
           <div class="custom-select">
             <select v-model="sortOrder">
               <option value="asc">Ascending</option>
@@ -35,7 +43,11 @@
           </div>
         </div>
 
-        <!-- CART BUTTON -->
+        <!--
+          CART BUTTON
+          Toggles between lesson list and cart view.
+          Disabled when there are no items in the cart.
+        -->
         <button
           class="cart-btn"
           @click="showCart = !showCart"
@@ -43,6 +55,7 @@
         >
           <i class="fa-solid fa-cart-shopping"></i>
           <span>Cart</span>
+          <!-- Badge shows the total quantity of items in the cart -->
           <span v-if="cartItemCount" class="cart-badge">
             {{ cartItemCount }}
           </span>
@@ -50,20 +63,23 @@
       </div>
     </header>
 
-    <!-- MAIN -->
+    <!-- ========================= MAIN CONTENT ========================= -->
     <main>
+      <!-- Fade transition when switching between lessons and cart views -->
       <transition name="fade" mode="out-in">
-        <!-- LESSON LIST -->
+        <!-- ===================== LESSON LIST VIEW ===================== -->
         <section v-if="!showCart" key="lessons" class="lesson-section">
           <h2>Available Lessons</h2>
           <p class="page-subtitle">
             Browse and book lessons across Hendon, Colindale, Brent Cross and more.
           </p>
 
+          <!-- Show how many lessons match the current search/filter -->
           <p class="lesson-count">
             {{ sortedAndFilteredLessons.length }} lesson(s) found
           </p>
 
+          <!-- Friendly message when no lessons match the search term -->
           <p
             v-if="!sortedAndFilteredLessons.length && searchTerm"
             class="no-results"
@@ -72,30 +88,38 @@
             No lessons found for "{{ searchTerm }}".
           </p>
 
+          <!-- Lesson cards -->
           <div v-else class="lesson-grid">
             <div
               class="lesson-card"
               v-for="lesson in sortedAndFilteredLessons"
               :key="lesson.id"
             >
+              <!-- Lesson icon/image -->
               <img
                 :src="lesson.image"
                 :alt="lesson.subject + ' lesson icon'"
                 class="lesson-img"
               />
+
+              <!-- Lesson information -->
               <div class="lesson-info">
                 <h3>
                   <i :class="lesson.icon"></i>
                   {{ lesson.subject }}
                 </h3>
+
                 <p>
                   <i class="fa-solid fa-location-dot"></i>
                   {{ lesson.location }}
                 </p>
+
                 <p>£{{ lesson.price }}</p>
+
                 <p>
                   <i class="fa-solid fa-users"></i>
                   Spaces: {{ lesson.spaces }}
+                  <!-- “Almost full” badge when only 1–2 spaces remain -->
                   <span
                     v-if="lesson.spaces > 0 && lesson.spaces <= 2"
                     class="badge-low"
@@ -105,6 +129,11 @@
                 </p>
               </div>
 
+              <!--
+                Add to Cart button
+                - Disabled when no spaces are left
+                - Also changes label to “Full”
+              -->
               <button
                 @click="addToCart(lesson)"
                 :disabled="lesson.spaces === 0"
@@ -117,20 +146,23 @@
           </div>
         </section>
 
-        <!-- CART + CHECKOUT -->
+        <!-- ===================== CART + CHECKOUT VIEW ===================== -->
         <section v-else key="cart" class="cart-section">
           <div class="cart-header">
+            <!-- Navigate back to lesson list -->
             <button class="back-btn" @click="showCart = false">
               <i class="fa-solid fa-arrow-left"></i> Back to lessons
             </button>
             <h2>Your Cart</h2>
           </div>
 
+          <!-- Message shown when the cart is empty -->
           <p v-if="!cart.length" class="cart-empty">
             Your cart is empty. Add some lessons to continue 🌱
           </p>
 
           <div v-else>
+            <!-- Cart items “table” -->
             <ul class="cart-list">
               <li class="cart-header-row">
                 <span>Lesson</span>
@@ -140,6 +172,7 @@
                 <span></span>
               </li>
 
+              <!-- One row per cart item -->
               <li
                 v-for="(item, index) in cart"
                 :key="item.id"
@@ -162,6 +195,7 @@
 
                 <span class="cart-price">£{{ item.price }}</span>
 
+                <!-- Quantity controls -->
                 <div class="cart-qty">
                   <button
                     class="qty-btn"
@@ -180,10 +214,12 @@
                   </button>
                 </div>
 
+                <!-- Line total = price * quantity -->
                 <span class="cart-line-total">
                   £{{ (item.price * item.quantity).toFixed(2) }}
                 </span>
 
+                <!-- Remove the item completely from the cart -->
                 <button
                   class="remove-btn"
                   type="button"
@@ -194,6 +230,7 @@
               </li>
             </ul>
 
+            <!-- Overall cart summary -->
             <div class="cart-total-box">
               <h3>
                 {{ cartItemCount }} item(s) |
@@ -201,9 +238,16 @@
               </h3>
             </div>
 
+            <!-- ===================== CHECKOUT FORM ===================== -->
             <div class="checkout-box">
               <h3>Checkout</h3>
+
+              <!--
+                @submit.prevent: stop normal form submission.
+                Vue handles validation and "submitting" locally for now.
+              -->
               <form @submit.prevent="checkout">
+                <!-- Name input with real-time clearing of errors -->
                 <label>
                   Name
                   <input
@@ -213,8 +257,10 @@
                     @input="nameError = ''; orderConfirmed = false"
                   />
                 </label>
+                <!-- Error message for invalid name -->
                 <p v-if="nameError" class="error">{{ nameError }}</p>
 
+                <!-- Phone input with real-time clearing of errors -->
                 <label>
                   Phone
                   <input
@@ -224,8 +270,14 @@
                     @input="phoneError = ''; orderConfirmed = false"
                   />
                 </label>
+                <!-- Error message for invalid phone -->
                 <p v-if="phoneError" class="error">{{ phoneError }}</p>
 
+                <!--
+                  Submit button disabled when:
+                  - cart is empty, OR
+                  - form is not valid (isFormValid = false)
+                -->
                 <button
                   class="checkout-btn"
                   type="submit"
@@ -236,6 +288,7 @@
                 </button>
               </form>
 
+              <!-- Success message after a valid checkout -->
               <p v-if="orderConfirmed" class="success">
                 Order Confirmed Successfully!
               </p>
@@ -248,10 +301,14 @@
 </template>
 
 <script>
+// Root Vue component for the Lesson Booking single-page application (SPA)
 export default {
   data() {
     return {
+      // View state: false = show lessons, true = show cart
       showCart: false,
+
+      // Search and sorting state
       searchTerm: "",
       sortBy: "subject",
       sortOrder: "asc",
@@ -349,6 +406,8 @@ export default {
           image: "https://img.icons8.com/color/240/economic-improvement.png",
         },
       ],
+
+      // Cart state and checkout form fields
       cart: [],
       name: "",
       phone: "",
@@ -357,11 +416,13 @@ export default {
       orderConfirmed: false,
     };
   },
+
   computed: {
-  // Apply search term and sorting options to the lessons list
+    // Apply search term and sorting options to the lessons list
     sortedAndFilteredLessons() {
       const term = this.searchTerm.toLowerCase();
 
+      // Filter by subject, location, price or spaces
       let filtered = this.lessons.filter((lesson) => {
         if (!term) return true;
         return (
@@ -372,6 +433,7 @@ export default {
         );
       });
 
+      // Sort on selected field and order
       const field = this.sortBy;
       const order = this.sortOrder === "asc" ? 1 : -1;
 
@@ -389,10 +451,12 @@ export default {
 
       return filtered;
     },
+
     // Total number of lesson units in the cart
     cartItemCount() {
       return this.cart.reduce((sum, item) => sum + item.quantity, 0);
     },
+
     // Total price of all items in the cart
     cartTotal() {
       return this.cart.reduce(
@@ -400,22 +464,25 @@ export default {
         0
       );
     },
-    
+
     // Used to enable or disable the checkout button
     isFormValid() {
       return this.validateName(this.name) && this.validatePhone(this.phone);
     },
   },
+
   methods: {
-   // Switch back to the lessons view
+    // Switch back to the lessons view
     goHome() {
       this.showCart = false;
     },
+
     // Add a lesson to the cart and decrease available spaces
     addToCart(lesson) {
       if (lesson.spaces <= 0) return;
 
       const existing = this.cart.find((item) => item.id === lesson.id);
+
       if (existing) {
         existing.quantity += 1;
       } else {
@@ -428,18 +495,25 @@ export default {
           quantity: 1,
         });
       }
+
+      // Each cart addition uses one space from the lesson
       lesson.spaces -= 1;
+
+      // Optionally switch view to cart so user can see their selections
       this.showCart = true;
     },
-    // Increase quantity for a cart item (if spaces available)
+
+    // Increase quantity for a cart item (if spaces are still available)
     increaseQuantity(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
+
       if (lesson && lesson.spaces > 0) {
         item.quantity += 1;
         lesson.spaces -= 1;
       }
     },
+
     // Decrease quantity or remove item when it reaches zero
     decreaseQuantity(index) {
       const item = this.cart[index];
@@ -449,26 +523,33 @@ export default {
         item.quantity -= 1;
         if (lesson) lesson.spaces += 1;
       } else {
+        // If quantity would reach 0, remove the item from cart completely
         this.removeFromCart(index);
       }
     },
-    // Remove an item from the cart and restore its spaces
+
+    // Remove an item from the cart and restore all its spaces
     removeFromCart(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
+
       if (lesson) {
         lesson.spaces += item.quantity;
       }
+
       this.cart.splice(index, 1);
     },
+
     // Validate that the name contains only letters and spaces
     validateName(value) {
       return /^[A-Za-z\s]+$/.test(value);
     },
+
     // Validate that the phone number contains only digits
     validatePhone(value) {
       return /^[0-9]+$/.test(value);
     },
+
     // Handle checkout: validate form, then clear cart and show success message
     checkout() {
       this.nameError = "";
@@ -477,12 +558,15 @@ export default {
       if (!this.validateName(this.name)) {
         this.nameError = "Name must contain letters and spaces only.";
       }
+
       if (!this.validatePhone(this.phone)) {
         this.phoneError = "Phone must contain numbers only.";
       }
 
+      // If there are any validation errors, do not proceed
       if (this.nameError || this.phoneError) return;
 
+      // Later in the coursework, this is where the POST order to backend will go
       this.orderConfirmed = true;
       this.cart = [];
       this.name = "";
