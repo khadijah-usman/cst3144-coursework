@@ -358,6 +358,7 @@ export default {
     };
   },
   computed: {
+  // Apply search term and sorting options to the lessons list
     sortedAndFilteredLessons() {
       const term = this.searchTerm.toLowerCase();
 
@@ -388,18 +389,19 @@ export default {
 
       return filtered;
     },
-
+    // Total number of lesson units in the cart
     cartItemCount() {
       return this.cart.reduce((sum, item) => sum + item.quantity, 0);
     },
-
+    // Total price of all items in the cart
     cartTotal() {
       return this.cart.reduce(
         (total, item) => total + item.price * item.quantity,
         0
       );
     },
-
+    
+    // Used to enable or disable the checkout button
     isFormValid() {
       return this.validateName(this.name) && this.validatePhone(this.phone);
     },
