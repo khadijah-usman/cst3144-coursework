@@ -65,6 +65,10 @@
 
     <!-- ========================= MAIN CONTENT ========================= -->
     <main>
+       <!-- Small feedback message when adding items -->
+      <p v-if="feedbackMessage" class="success" style="text-align:center; margin-top:10px;">
+      {{ feedbackMessage }}
+      </p>
       <!-- Fade transition when switching between lessons and cart views -->
       <transition name="fade" mode="out-in">
         <!-- ===================== LESSON LIST VIEW ===================== -->
@@ -312,7 +316,8 @@ export default {
       searchTerm: "",
       sortBy: "subject",
       sortOrder: "asc",
-
+      // Message shown briefly when an item is added to cart
+      feedbackMessage: "",
       // Main list of 10 lessons used in the application
       lessons: [
         {
@@ -498,9 +503,14 @@ export default {
 
       // Each cart addition uses one space from the lesson
       lesson.spaces -= 1;
+     // ✅ Show a short confirmation message
+     this.feedbackMessage = `${lesson.subject} added to cart`;
 
-      
-    },
+     // Clear the message after 2 seconds
+     setTimeout(() => {
+     this.feedbackMessage = "";
+     }, 2000);
+},
 
     // Increase quantity for a cart item (if spaces are still available)
     increaseQuantity(index) {
