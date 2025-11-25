@@ -499,8 +499,7 @@ export default {
       // Each cart addition uses one space from the lesson
       lesson.spaces -= 1;
 
-      // Optionally switch view to cart so user can see their selections
-      this.showCart = true;
+      
     },
 
     // Increase quantity for a cart item (if spaces are still available)
