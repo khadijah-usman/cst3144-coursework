@@ -89,8 +89,8 @@
   
   .search:focus {
     border-color: var(--primary);
-    box-shadow: 0 0 6px rgba(132,161,196,0.3);
-  }
+    box-shadow: 0 0 8px rgba(168,191,170,0.4); /* softer green glow */
+}
   
   /* Sorting dropdown container */
   .sort-group {
