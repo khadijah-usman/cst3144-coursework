@@ -678,3 +678,32 @@
   .fade-leave-to {
     opacity: 0;
   }
+  /* Feedback message when an item is added to the cart */
+.feedback-message {
+  text-align: center;
+  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #22c55e;              /* same green as .success */
+  animation: feedbackFade 2s ease-out;
+}
+
+/* Simple fade in/out animation for feedback message */
+@keyframes feedbackFade {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  15% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  85% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

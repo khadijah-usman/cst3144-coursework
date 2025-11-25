@@ -8,11 +8,7 @@
       </h1>
 
       <div class="controls">
-        <!--
-          SEARCH
-          v-model: two-way binds searchTerm so the computed property
-          sortedAndFilteredLessons can reactively filter the list.
-        -->
+        <!-- SEARCH -->
         <input
           v-model="searchTerm"
           class="search"
@@ -43,33 +39,31 @@
           </div>
         </div>
 
-        <!--
-          CART BUTTON
-          Toggles between lesson list and cart view.
-          Disabled when there are no items in the cart.
-        -->
+        <!-- CART BUTTON (disabled when cart is empty) -->
         <button
           class="cart-btn"
-          @click="showCart = !showCart"
+          @click="toggleCart"
           :disabled="cartItemCount === 0"
         >
-          <i class="fa-solid fa-cart-shopping"></i>
-          <span>Cart</span>
-          <!-- Badge shows the total quantity of items in the cart -->
-          <span v-if="cartItemCount" class="cart-badge">
-            {{ cartItemCount }}
+          <span class="cart-icon">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span v-if="cartItemCount" class="cart-badge">
+              {{ cartItemCount }}
+            </span>
           </span>
+          <span>Cart</span>
         </button>
       </div>
     </header>
 
     <!-- ========================= MAIN CONTENT ========================= -->
     <main>
-       <!-- Small feedback message when adding items -->
-      <p v-if="feedbackMessage" class="success" style="text-align:center; margin-top:10px;">
-      {{ feedbackMessage }}
+      <!-- Little feedback line when adding items -->
+      <p v-if="feedbackMessage" class="feedback-message">
+        {{ feedbackMessage }}
       </p>
-      <!-- Fade transition when switching between lessons and cart views -->
+
+      <!-- Fade transition between lessons and cart views -->
       <transition name="fade" mode="out-in">
         <!-- ===================== LESSON LIST VIEW ===================== -->
         <section v-if="!showCart" key="lessons" class="lesson-section">
@@ -133,15 +127,11 @@
                 </p>
               </div>
 
-              <!--
-                Add to Cart button
-                - Disabled when no spaces are left
-                - Also changes label to “Full”
-              -->
+              <!-- Add to Cart button -->
               <button
+                class="add-btn"
                 @click="addToCart(lesson)"
                 :disabled="lesson.spaces === 0"
-                class="add-btn"
               >
                 <i class="fa-solid fa-cart-plus"></i>
                 {{ lesson.spaces > 0 ? "Add to Cart" : "Full" }}
@@ -160,7 +150,7 @@
             <h2>Your Cart</h2>
           </div>
 
-          <!-- Message shown when the cart is empty -->
+          <!-- Empty cart message -->
           <p v-if="!cart.length" class="cart-empty">
             Your cart is empty. Add some lessons to continue 🌱
           </p>
@@ -246,42 +236,32 @@
             <div class="checkout-box">
               <h3>Checkout</h3>
 
-              <!--
-                @submit.prevent: stop normal form submission.
-                Vue handles validation and "submitting" locally for now.
-              -->
               <form @submit.prevent="checkout">
-                <!-- Name input with real-time clearing of errors -->
+                <!-- Name input -->
                 <label>
                   Name
                   <input
                     v-model="name"
                     type="text"
                     placeholder="Name (letters only)"
-                    @input="nameError = ''; orderConfirmed = false"
+                    @input="clearNameError"
                   />
                 </label>
-                <!-- Error message for invalid name -->
                 <p v-if="nameError" class="error">{{ nameError }}</p>
 
-                <!-- Phone input with real-time clearing of errors -->
+                <!-- Phone input -->
                 <label>
                   Phone
                   <input
                     v-model="phone"
                     type="tel"
                     placeholder="Phone (numbers only)"
-                    @input="phoneError = ''; orderConfirmed = false"
+                    @input="clearPhoneError"
                   />
                 </label>
-                <!-- Error message for invalid phone -->
                 <p v-if="phoneError" class="error">{{ phoneError }}</p>
 
-                <!--
-                  Submit button disabled when:
-                  - cart is empty, OR
-                  - form is not valid (isFormValid = false)
-                -->
+                <!-- Checkout button -->
                 <button
                   class="checkout-btn"
                   type="submit"
@@ -305,114 +285,22 @@
 </template>
 
 <script>
-// Root Vue component for the Lesson Booking single-page application (SPA)
+const API_BASE_URL = "http://localhost:3000"; // change to Render/AWS URL later
+
 export default {
+  name: "App",
+
   data() {
     return {
-      // View state: false = show lessons, true = show cart
       showCart: false,
 
-      // Search and sorting state
       searchTerm: "",
       sortBy: "subject",
       sortOrder: "asc",
-      // Message shown briefly when an item is added to cart
-      feedbackMessage: "",
-      // Main list of 10 lessons used in the application
-      lessons: [
-        {
-          id: 1,
-          subject: "Mathematics",
-          location: "Hendon",
-          price: 100,
-          spaces: 5,
-          icon: "fa-solid fa-calculator",
-          image: "https://img.icons8.com/color/240/calculator--v1.png",
-        },
-        {
-          id: 2,
-          subject: "English",
-          location: "Colindale",
-          price: 80,
-          spaces: 5,
-          icon: "fa-solid fa-book-open",
-          image: "https://img.icons8.com/color/240/book-reading.png",
-        },
-        {
-          id: 3,
-          subject: "Biology",
-          location: "Golders Green",
-          price: 90,
-          spaces: 5,
-          icon: "fa-solid fa-seedling",
-          image: "https://img.icons8.com/color/240/dna-helix.png",
-        },
-        {
-          id: 4,
-          subject: "Chemistry",
-          location: "Brent Cross",
-          price: 70,
-          spaces: 5,
-          icon: "fa-solid fa-flask",
-          image: "https://img.icons8.com/color/240/test-tube.png",
-        },
-        {
-          id: 5,
-          subject: "History",
-          location: "Hendon",
-          price: 50,
-          spaces: 5,
-          icon: "fa-solid fa-landmark",
-          image: "https://img.icons8.com/color/240/scroll.png",
-        },
-        {
-          id: 6,
-          subject: "Physics",
-          location: "Colindale",
-          price: 95,
-          spaces: 5,
-          icon: "fa-solid fa-atom",
-          image: "https://img.icons8.com/color/240/physics.png",
-        },
-        {
-          id: 7,
-          subject: "Art",
-          location: "Brent Cross",
-          price: 60,
-          spaces: 5,
-          icon: "fa-solid fa-palette",
-          image: "https://img.icons8.com/color/240/art-prices.png",
-        },
-        {
-          id: 8,
-          subject: "Geography",
-          location: "Golders Green",
-          price: 85,
-          spaces: 5,
-          icon: "fa-solid fa-earth-europe",
-          image: "https://img.icons8.com/color/240/globe--v1.png",
-        },
-        {
-          id: 9,
-          subject: "Computer Science",
-          location: "Hendon",
-          price: 120,
-          spaces: 5,
-          icon: "fa-solid fa-code",
-          image: "https://img.icons8.com/color/240/source-code.png",
-        },
-        {
-          id: 10,
-          subject: "Economics",
-          location: "Colindale",
-          price: 110,
-          spaces: 5,
-          icon: "fa-solid fa-chart-line",
-          image: "https://img.icons8.com/color/240/economic-improvement.png",
-        },
-      ],
 
-      // Cart state and checkout form fields
+      feedbackMessage: "",
+      lessons: [],
+
       cart: [],
       name: "",
       phone: "",
@@ -423,26 +311,13 @@ export default {
   },
 
   computed: {
-    // Apply search term and sorting options to the lessons list
+    // Lessons are filtered by backend search, we only sort here
     sortedAndFilteredLessons() {
-      const term = this.searchTerm.toLowerCase();
-
-      // Filter by subject, location, price or spaces
-      let filtered = this.lessons.filter((lesson) => {
-        if (!term) return true;
-        return (
-          lesson.subject.toLowerCase().includes(term) ||
-          lesson.location.toLowerCase().includes(term) ||
-          String(lesson.price).includes(term) ||
-          String(lesson.spaces).includes(term)
-        );
-      });
-
-      // Sort on selected field and order
       const field = this.sortBy;
       const order = this.sortOrder === "asc" ? 1 : -1;
+      const copy = [...this.lessons];
 
-      filtered.sort((a, b) => {
+      copy.sort((a, b) => {
         let x = a[field];
         let y = b[field];
 
@@ -454,15 +329,13 @@ export default {
         return 0;
       });
 
-      return filtered;
+      return copy;
     },
 
-    // Total number of lesson units in the cart
     cartItemCount() {
       return this.cart.reduce((sum, item) => sum + item.quantity, 0);
     },
 
-    // Total price of all items in the cart
     cartTotal() {
       return this.cart.reduce(
         (total, item) => total + item.price * item.quantity,
@@ -470,19 +343,59 @@ export default {
       );
     },
 
-    // Used to enable or disable the checkout button
     isFormValid() {
-      return this.validateName(this.name) && this.validatePhone(this.phone);
+      return (
+        this.name.length > 0 &&
+        this.phone.length > 0 &&
+        this.validateName(this.name) &&
+        this.validatePhone(this.phone)
+      );
     },
   },
 
+  watch: {
+    // search-as-you-type → call backend /search
+    searchTerm() {
+      this.fetchLessons();
+    },
+  },
+
+  created() {
+    this.fetchLessons();
+  },
+
   methods: {
-    // Switch back to the lessons view
+    // =============== API CALLS ===============
+
+    async fetchLessons() {
+      try {
+        const term = this.searchTerm.trim();
+        const endpoint = term
+          ? `${API_BASE_URL}/search?q=${encodeURIComponent(term)}`
+          : `${API_BASE_URL}/lessons`;
+
+        const response = await fetch(endpoint);
+        if (!response.ok) throw new Error("Failed to load lessons");
+
+        const data = await response.json();
+        this.lessons = data;
+      } catch (err) {
+        console.error("fetchLessons error:", err);
+      }
+    },
+
+    // =============== UI HELPERS ===============
+
     goHome() {
       this.showCart = false;
     },
 
-    // Add a lesson to the cart and decrease available spaces
+    toggleCart() {
+      if (this.cartItemCount > 0) {
+        this.showCart = !this.showCart;
+      }
+    },
+
     addToCart(lesson) {
       if (lesson.spaces <= 0) return;
 
@@ -501,18 +414,14 @@ export default {
         });
       }
 
-      // Each cart addition uses one space from the lesson
       lesson.spaces -= 1;
-     // ✅ Show a short confirmation message
-     this.feedbackMessage = `${lesson.subject} added to cart`;
 
-     // Clear the message after 2 seconds
-     setTimeout(() => {
-     this.feedbackMessage = "";
-     }, 2000);
-},
+      this.feedbackMessage = `${lesson.subject} added to cart`;
+      setTimeout(() => {
+        this.feedbackMessage = "";
+      }, 2000);
+    },
 
-    // Increase quantity for a cart item (if spaces are still available)
     increaseQuantity(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -523,7 +432,6 @@ export default {
       }
     },
 
-    // Decrease quantity or remove item when it reaches zero
     decreaseQuantity(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -532,12 +440,10 @@ export default {
         item.quantity -= 1;
         if (lesson) lesson.spaces += 1;
       } else {
-        // If quantity would reach 0, remove the item from cart completely
         this.removeFromCart(index);
       }
     },
 
-    // Remove an item from the cart and restore all its spaces
     removeFromCart(index) {
       const item = this.cart[index];
       const lesson = this.lessons.find((l) => l.id === item.id);
@@ -549,20 +455,30 @@ export default {
       this.cart.splice(index, 1);
     },
 
-    // Validate that the name contains only letters and spaces
     validateName(value) {
       return /^[A-Za-z\s]+$/.test(value);
     },
 
-    // Validate that the phone number contains only digits
     validatePhone(value) {
       return /^[0-9]+$/.test(value);
     },
 
-    // Handle checkout: validate form, then clear cart and show success message
-    checkout() {
+    clearNameError() {
+      this.nameError = "";
+      this.orderConfirmed = false;
+    },
+
+    clearPhoneError() {
+      this.phoneError = "";
+      this.orderConfirmed = false;
+    },
+
+    // =============== CHECKOUT (POST + PUT) ===============
+
+    async checkout() {
       this.nameError = "";
       this.phoneError = "";
+      this.orderConfirmed = false;
 
       if (!this.validateName(this.name)) {
         this.nameError = "Name must contain letters and spaces only.";
@@ -572,14 +488,53 @@ export default {
         this.phoneError = "Phone must contain numbers only.";
       }
 
-      // If there are any validation errors, do not proceed
       if (this.nameError || this.phoneError) return;
 
-      // Later in the coursework, this is where the POST order to backend will go
-      this.orderConfirmed = true;
-      this.cart = [];
-      this.name = "";
-      this.phone = "";
+      const orderPayload = {
+        name: this.name,
+        phone: this.phone,
+        items: this.cart.map((item) => ({
+          id: item.id,
+          quantity: item.quantity,
+        })),
+        total: this.cartTotal,
+      };
+
+      try {
+        // 1) save order
+        const res = await fetch(`${API_BASE_URL}/orders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(orderPayload),
+        });
+
+        if (!res.ok) throw new Error("Failed to submit order");
+
+        // 2) update spaces in DB for each lesson
+        await Promise.all(
+          this.cart.map(async (item) => {
+            const lesson = this.lessons.find((l) => l.id === item.id);
+            if (!lesson) return;
+
+            await fetch(`${API_BASE_URL}/lessons/${lesson.id}`, {
+              method: "PUT",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ spaces: lesson.spaces }),
+            });
+          })
+        );
+
+        this.orderConfirmed = true;
+        this.cart = [];
+        this.name = "";
+        this.phone = "";
+
+        // refresh from backend so spaces match DB
+        this.fetchLessons();
+      } catch (err) {
+        console.error("Checkout error:", err);
+        alert("There was a problem submitting your order. Please try again.");
+      }
     },
   },
 };
