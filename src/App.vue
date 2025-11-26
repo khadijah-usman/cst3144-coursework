@@ -285,7 +285,7 @@
 </template>
 
 <script>
-const API_BASE_URL = "https://YOUR-URL.onrender.com";
+const API_BASE_URL = "https://cst3144-backend-s4qp.onrender.com";
 
 export default {
   name: "App",
