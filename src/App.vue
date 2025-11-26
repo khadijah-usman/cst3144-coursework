@@ -144,13 +144,17 @@
             <h2>Your Cart</h2>
           </div>
 
-          <p v-if="!cart.length" class="cart-empty">
+          <!-- Only show “empty” message when there was no successful order -->
+          <p v-if="!cart.length && !orderConfirmed" class="cart-empty">
             Your cart is empty. Add some lessons to continue 🌱
           </p>
 
+          <!-- Show checkout + success message when:
+               - cart has items, OR
+               - an order was just confirmed -->
           <div v-else>
             <!-- Cart items -->
-            <ul class="cart-list">
+            <ul v-if="cart.length" class="cart-list">
               <li class="cart-header-row">
                 <span>Lesson</span>
                 <span>Price</span>
@@ -213,8 +217,8 @@
               </li>
             </ul>
 
-            <!-- Cart summary -->
-            <div class="cart-total-box">
+            <!-- Cart summary (only when cart has items) -->
+            <div v-if="cart.length" class="cart-total-box">
               <h3>
                 {{ cartItemCount }} item(s) |
                 Total: £{{ cartTotal.toFixed(2) }}
@@ -251,7 +255,11 @@
                 <p v-if="phoneError" class="error">{{ phoneError }}</p>
 
                 <!-- Submit -->
-                <button class="checkout-btn" type="submit">
+                <button
+                  class="checkout-btn"
+                  type="submit"
+                  :disabled="!cart.length && !orderConfirmed"
+                >
                   Place Order
                 </button>
 
