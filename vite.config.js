@@ -3,5 +3,5 @@ import vue from '@vitejs/plugin-vue'
 
 export default defineConfig({
   plugins: [vue()],
-  base: '/lesson-booking-frontend/'  
+  base: '/cst3144-coursework/'   // must match repo name on GitHub
 })
