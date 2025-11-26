@@ -2,7 +2,7 @@
   <div id="app">
     <!-- ========================= HEADER ========================= -->
     <header class="header">
-      <!-- Logo also acts as a "home" button to return to lesson list -->
+      <!-- Logo acts as "home" button -->
       <h1 class="logo" @click="goHome" style="cursor: pointer;">
         <i class="fa-solid fa-graduation-cap"></i> LessonHub
       </h1>
@@ -18,7 +18,7 @@
 
         <!-- SORTING CONTROLS -->
         <div class="sort-group">
-          <!-- Sort by field: subject, location, price or spaces -->
+          <!-- Sort field -->
           <div class="custom-select">
             <select v-model="sortBy">
               <option value="subject">Subject</option>
@@ -29,7 +29,7 @@
             <i class="fa-solid fa-angle-down"></i>
           </div>
 
-          <!-- Sort order: ascending or descending -->
+          <!-- Sort order -->
           <div class="custom-select">
             <select v-model="sortOrder">
               <option value="asc">Ascending</option>
@@ -39,7 +39,7 @@
           </div>
         </div>
 
-        <!-- CART BUTTON (disabled when cart is empty) -->
+        <!-- CART BUTTON -->
         <button
           class="cart-btn"
           @click="toggleCart"
@@ -58,12 +58,12 @@
 
     <!-- ========================= MAIN CONTENT ========================= -->
     <main>
-      <!-- Little feedback line when adding items -->
+      <!-- Feedback when adding items -->
       <p v-if="feedbackMessage" class="feedback-message">
         {{ feedbackMessage }}
       </p>
 
-      <!-- Fade transition between lessons and cart views -->
+      <!-- Fade transition between lessons + cart -->
       <transition name="fade" mode="out-in">
         <!-- ===================== LESSON LIST VIEW ===================== -->
         <section v-if="!showCart" key="lessons" class="lesson-section">
@@ -72,12 +72,11 @@
             Browse and book lessons across Hendon, Colindale, Brent Cross and more.
           </p>
 
-          <!-- Show how many lessons match the current search/filter -->
           <p class="lesson-count">
             {{ sortedAndFilteredLessons.length }} lesson(s) found
           </p>
 
-          <!-- Friendly message when no lessons match the search term -->
+          <!-- No-results message -->
           <p
             v-if="!sortedAndFilteredLessons.length && searchTerm"
             class="no-results"
@@ -93,14 +92,12 @@
               v-for="lesson in sortedAndFilteredLessons"
               :key="lesson.id"
             >
-              <!-- Lesson icon/image -->
               <img
                 :src="lesson.image"
                 :alt="lesson.subject + ' lesson icon'"
                 class="lesson-img"
               />
 
-              <!-- Lesson information -->
               <div class="lesson-info">
                 <h3>
                   <i :class="lesson.icon"></i>
@@ -117,7 +114,6 @@
                 <p>
                   <i class="fa-solid fa-users"></i>
                   Spaces: {{ lesson.spaces }}
-                  <!-- “Almost full” badge when only 1–2 spaces remain -->
                   <span
                     v-if="lesson.spaces > 0 && lesson.spaces <= 2"
                     class="badge-low"
@@ -127,7 +123,6 @@
                 </p>
               </div>
 
-              <!-- Add to Cart button -->
               <button
                 class="add-btn"
                 @click="addToCart(lesson)"
@@ -143,20 +138,18 @@
         <!-- ===================== CART + CHECKOUT VIEW ===================== -->
         <section v-else key="cart" class="cart-section">
           <div class="cart-header">
-            <!-- Navigate back to lesson list -->
             <button class="back-btn" @click="showCart = false">
               <i class="fa-solid fa-arrow-left"></i> Back to lessons
             </button>
             <h2>Your Cart</h2>
           </div>
 
-          <!-- Empty cart message -->
           <p v-if="!cart.length" class="cart-empty">
             Your cart is empty. Add some lessons to continue 🌱
           </p>
 
           <div v-else>
-            <!-- Cart items “table” -->
+            <!-- Cart items -->
             <ul class="cart-list">
               <li class="cart-header-row">
                 <span>Lesson</span>
@@ -166,7 +159,6 @@
                 <span></span>
               </li>
 
-              <!-- One row per cart item -->
               <li
                 v-for="(item, index) in cart"
                 :key="item.id"
@@ -189,7 +181,6 @@
 
                 <span class="cart-price">£{{ item.price }}</span>
 
-                <!-- Quantity controls -->
                 <div class="cart-qty">
                   <button
                     class="qty-btn"
@@ -208,12 +199,10 @@
                   </button>
                 </div>
 
-                <!-- Line total = price * quantity -->
                 <span class="cart-line-total">
                   £{{ (item.price * item.quantity).toFixed(2) }}
                 </span>
 
-                <!-- Remove the item completely from the cart -->
                 <button
                   class="remove-btn"
                   type="button"
@@ -224,7 +213,7 @@
               </li>
             </ul>
 
-            <!-- Overall cart summary -->
+            <!-- Cart summary -->
             <div class="cart-total-box">
               <h3>
                 {{ cartItemCount }} item(s) |
@@ -237,7 +226,7 @@
               <h3>Checkout</h3>
 
               <form @submit.prevent="checkout">
-                <!-- Name input -->
+                <!-- Name -->
                 <label>
                   Name
                   <input
@@ -249,7 +238,7 @@
                 </label>
                 <p v-if="nameError" class="error">{{ nameError }}</p>
 
-                <!-- Phone input -->
+                <!-- Phone -->
                 <label>
                   Phone
                   <input
@@ -261,21 +250,20 @@
                 </label>
                 <p v-if="phoneError" class="error">{{ phoneError }}</p>
 
-                <!-- Checkout button -->
-                <button
-                  class="checkout-btn"
-                  type="submit"
-                  :disabled="!cart.length || !isFormValid"
-                >
-                  <i class="fa-solid fa-paper-plane"></i>
-                  Submit Order
+                <!-- Submit -->
+                <button class="checkout-btn" type="submit">
+                  Place Order
                 </button>
-              </form>
 
-              <!-- Success message after a valid checkout -->
-              <p v-if="orderConfirmed" class="success">
-                Order Confirmed Successfully!
-              </p>
+                <!-- Messages -->
+                <p v-if="orderConfirmed" class="order-success">
+                  Thank you! Your order has been placed.
+                </p>
+
+                <p v-if="orderError" class="order-error">
+                  {{ orderError }}
+                </p>
+              </form>
             </div>
           </div>
         </section>
@@ -307,11 +295,12 @@ export default {
       nameError: "",
       phoneError: "",
       orderConfirmed: false,
+      orderError: "",
     };
   },
 
   computed: {
-    // Lessons are filtered by backend search, we only sort here
+    // Lessons are filtered by backend search; we sort them here
     sortedAndFilteredLessons() {
       const field = this.sortBy;
       const order = this.sortOrder === "asc" ? 1 : -1;
@@ -365,8 +354,7 @@ export default {
   },
 
   methods: {
-    // =============== API CALLS ===============
-
+    // ================= API =================
     async fetchLessons() {
       try {
         const term = this.searchTerm.trim();
@@ -384,8 +372,7 @@ export default {
       }
     },
 
-    // =============== UI HELPERS ===============
-
+    // ================= UI HELPERS =================
     goHome() {
       this.showCart = false;
     },
@@ -466,19 +453,21 @@ export default {
     clearNameError() {
       this.nameError = "";
       this.orderConfirmed = false;
+      this.orderError = "";
     },
 
     clearPhoneError() {
       this.phoneError = "";
       this.orderConfirmed = false;
+      this.orderError = "";
     },
 
-    // =============== CHECKOUT (POST + PUT) ===============
-
+    // ================= CHECKOUT =================
     async checkout() {
       this.nameError = "";
       this.phoneError = "";
       this.orderConfirmed = false;
+      this.orderError = "";
 
       if (!this.validateName(this.name)) {
         this.nameError = "Name must contain letters and spaces only.";
@@ -510,7 +499,7 @@ export default {
 
         if (!res.ok) throw new Error("Failed to submit order");
 
-        // 2) update spaces in DB for each lesson
+        // 2) update spaces in DB
         await Promise.all(
           this.cart.map(async (item) => {
             const lesson = this.lessons.find((l) => l.id === item.id);
@@ -524,16 +513,18 @@ export default {
           })
         );
 
+        // 3) show confirmation + clear cart + form
         this.orderConfirmed = true;
         this.cart = [];
         this.name = "";
         this.phone = "";
 
-        // refresh from backend so spaces match DB
-        this.fetchLessons();
+        // refresh lessons from backend
+        await this.fetchLessons();
       } catch (err) {
         console.error("Checkout error:", err);
-        alert("There was a problem submitting your order. Please try again.");
+        this.orderError =
+          "There was a problem submitting your order. Please try again.";
       }
     },
   },
