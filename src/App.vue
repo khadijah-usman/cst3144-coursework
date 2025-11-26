@@ -285,7 +285,7 @@
 </template>
 
 <script>
-const API_BASE_URL = "http://localhost:3000"; // change to Render/AWS URL later
+const API_BASE_URL = "https://YOUR-URL.onrender.com";
 
 export default {
   name: "App",
